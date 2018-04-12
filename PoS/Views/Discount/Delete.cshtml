@@ -1,0 +1,38 @@
+﻿@model PoS.Models.Discount
+
+@{
+    ViewBag.Title = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<fieldset>
+    <legend>Discount</legend>
+
+    <div class="display-label">Name</div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.Name)
+    </div>
+
+    <div class="display-label">Type</div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.Type)
+    </div>
+
+    <div class="display-label">FixedAmount</div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.FixedAmount)
+    </div>
+
+    <div class="display-label">PercentAmount</div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.PercentAmount)
+    </div>
+</fieldset>
+@using (Html.BeginForm()) {
+    <p>
+        <input type="submit" value="Delete" /> |
+        @Html.ActionLink("Back to Register", "Index", "Register")
+    </p>
+}

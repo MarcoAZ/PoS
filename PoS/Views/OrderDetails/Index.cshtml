@@ -1,0 +1,75 @@
+﻿@model IEnumerable<PoS.Models.OrderDetails>
+
+@{
+    ViewBag.Title = "Order History";
+}
+<h2>Order History</h2>
+<p>
+    @Html.ActionLink("Create New Order", "Index", "Register")
+</p>
+
+<table>
+    <tr class="row">
+        <th class="col">
+            Order ID#
+        </th>
+        <th class="col">
+            Order Date
+        </th>
+        <th class="col">
+            Server First Name
+        </th>
+        <th class="col">
+            Server Last Name
+        </th>
+        <th class="col">
+            SubTotal
+        </th>
+        <th class="col">
+            Discount Amount
+        </th>
+        <th class="col">
+            Pre-Tax Total
+        </th>
+        <th class="col">
+            Tax
+        </th>
+        <th class="col">
+            Total
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var order in Model) {
+    <tr class="row">
+        <td class="col">
+            @Html.DisplayFor(modelItem => order.Id)
+        </td>
+        <td class="col">
+            @Html.DisplayFor(modelItem => order.OrderDate)
+        </td>
+        <td class="col">
+            @Html.DisplayFor(modelItem => order.ServerFirst)
+        </td>
+        <td class="col">
+            @Html.DisplayFor(modelItem => order.ServerLast)
+        </td>
+        <td class="col">
+            @Html.DisplayFor(modelItem => order.Subtotal)
+        </td>
+        <td class="col">
+            @Html.DisplayFor(modelItem => order.DiscountAmount)
+        </td>
+        <td class="col">
+            @Html.DisplayFor(modelItem => order.PreTaxTotal)
+        </td>
+        <td class="col">
+            @Html.DisplayFor(modelItem => order.Tax)
+        </td>
+        <td class="col">
+            @Html.DisplayFor(modelItem => order.Total)
+        </td>
+    </tr>
+}
+
+</table>

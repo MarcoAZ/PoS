@@ -1,0 +1,355 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+<div class="row">
+<div class="col-6">
+    @Html.ActionLink("Log Out", "Index", "Home")
+
+    <!--LEFT SIDE OF PAGE-->
+    <h2>MENU</h2>
+    @Html.ActionLink("Create New Item", "Create", "MenuItem")
+    <div>
+    @foreach (var item in ViewBag.MenuItems)
+    {
+        <div class="selectionBoxes">
+            <button class="MenuItem btn btn-info btn-lg">
+                <div>@item.Name</div>
+                <div>$@item.Cost</div>
+                <div class="MenuItemId" hidden>@item.Id</div>
+            </button>
+            <div>
+                @Html.ActionLink("Edit", "Edit", "MenuItem", new { id = item.Id }, null) |
+                @Html.ActionLink("Delete", "Delete", "MenuItem", new { id = item.Id }, null)
+            </div>
+        </div>
+    }
+    </div>
+    <div>
+        <h4>Taxes Applied</h4>
+        @Html.ActionLink("Create New Tax", "Create", "Tax")
+        <p>
+            @foreach (var Tax in ViewBag.Taxes)
+            { 
+            <div class="selectionBoxes">
+                <button class="tax btn btn-default btn-lg">
+                    <div>@Tax.Name</div>
+                    <div>@Tax.Rate%</div>
+                    <div class="TaxId" hidden>@Tax.Id</div>
+                </button>
+                <div>
+                    @Html.ActionLink("Edit", "Edit", "Tax", new { id = Tax.Id }, null) |
+                    @Html.ActionLink("Delete", "Delete", "Tax", new { id = Tax.Id }, null)
+                </div>
+            </div>
+            }
+        </p>
+    </div>
+    <div>
+        <h4>Discounts Available</h4>
+        @Html.ActionLink("Create New Discount", "Create", "Discount")
+        <p>
+            @foreach (var Discount in ViewBag.Discounts)
+            { 
+            <div class="selectionBoxes">
+                <button class="discount btn btn-info btn-lg">
+                    <div>@Discount.Name</div>
+                    @if (Discount.Type == "Fixed") { 
+                        <div>$@Discount.FixedAmount</div>
+                    }
+                    else{
+                        <div>@Discount.PercentAmount%</div>
+                    }
+            
+                    <div class="discountId" hidden>@Discount.Id</div>
+                </button>
+                <div>
+                    @Html.ActionLink("Edit", "Edit", "Discount", new { id = Discount.Id }, null) |
+                    @Html.ActionLink("Delete", "Delete", "Discount", new { id = Discount.Id }, null)
+                </div>
+            </div>
+            }
+        </p>
+    </div>
+</div>
+<div class="col">
+    <!-- RIGHT SIDE -->
+    <!-- TOP -->
+    <table>
+        <thead>
+            <tr class="row">
+                <th class="col-2">Qty</th>
+                <th class="col-4">Name</th>
+                <th class="col-4">Total</th>
+                <th class="col-2"></th>
+            </tr>
+        </thead>
+        <tbody class="col" id="order">
+            <!-- DYNAMIC DATA HERE -->
+        </tbody>
+    </table>
+
+    <!-- BOTTOM -->
+    <table class="col-lg"><caption>Server: @ViewBag.LastName, @ViewBag.FirstName</caption>
+        <tbody>
+            <tr class="row">
+                <td class="col-3">Sub-total</td>
+                <td class="col" id="subtotal">0.00</td>
+            </tr>
+            <tr class="row">
+                <td class="col-3">Discount</td>
+                <td class="col" id="discount">0.00</td>
+            </tr>
+            <tr class="row">
+                <td class="col-3">Pre-Tax Total</td>
+                <td class="col" id="pretax">0.00</td>
+            </tr>
+            <tr class="row">
+                <td class="col-3">Tax</td>
+                <td class="col" id="tax">0.00</td>
+            </tr>
+            <tr class="row">
+                <td class="col-3">Total</td>
+                <td class="col" id="total">0.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <button id="submit" class="btn" disabled>SUBMIT ORDER</button>
+    <p>@Html.ActionLink("View Order History", "Index", "OrderDetails")</p>
+</div>
+
+</div>
+
+<script type="text/javascript">
+
+    /* LISTENERS */
+    //listen for clicks on Add
+    $(".MenuItem").each(function () {
+        $(this).click(function () {
+            //add item to the list of ordered items
+            AddToOrder($(this).find(".MenuItemId:first").text());
+            activateBtn();
+        });
+    })
+
+    //listener for removal from order
+    $('#order').on("click", ".removeItem", function () {
+        //search for the ID of the chosen item and remove
+        removeFromOrder($(this).closest("tr").attr('id'), $(this).closest("tr"));
+    });
+
+    //listener for submit order button
+    $('#submit').on("click", function () {
+        submitOrder();
+    });
+
+    //listener for discount select
+    $('.discount').each(function(){
+        $(this).click("click", function(){
+            //if clicked first time, disable buttons and select this discount
+            if(!$(this).hasClass('selectedDiscount'))
+                disableDiscounts($(this)[0]);
+                //else, set back to all buttons enabled
+            else
+                enableDiscounts();
+            updateTotals(0);
+        });
+    });
+    /* END LISTENERS */
+
+    function submitOrder() {
+        //gather up all the details
+        var data = packOrder();
+        //ajax post details to OrderDetails controller to save order
+        $.post("OrderDetails/Create", data)
+        .always(function(){deactivateBtn()})
+        .fail(function(){activateBtn()})
+        .done(function () {
+            window.location.href = '@Url.Action("Index", "OrderDetails", null)';
+        });
+    }
+
+    //gather order details for packaging
+    function packOrder() {
+        var data = {};
+
+        data.ServerFirst = "@ViewBag.FirstName",
+        data.ServerLast = "@ViewBag.LastName",
+        data.subtotal = $('#subtotal:first').text(),
+        data.DiscountAmount = $('#discount:first').text(),
+        data.PreTaxTotal = $('#pretax:first').text(),
+        data.Tax = $('#tax:first').text(),
+        data.Total = $('#total:first').text();
+
+        return data;
+    }
+
+    //removing items from order
+    function removeFromOrder(id, row){
+        //find order and quantity
+        var order = $('#order');
+        var curr = parseInt($('#' + id + ' > .qty:first').text());
+
+        //get details from DB
+        $.ajax({
+            method: "GET",
+            url: "MenuItem/Details/" + id
+        }).done(function (response) {
+            //if qty is one (last item)
+            if (curr == 1) {
+                //remove from list
+                row.remove();
+
+                //check if no items left in order
+                if(! $('#order').children().length)
+                    deactivateBtn();
+            }
+            else {
+                //else subtract 1 qty
+                $('#' + id + ' >.qty:first').text(curr - 1);
+            }
+
+            //update running total with negative cost since we are removing an item
+            updateTotals(parseFloat(response.cost) * -1);
+        });
+
+    }
+
+    //adding items to the order
+    function AddToOrder(id){
+        //find the list
+        var order = $('#order');
+        //get details from DB
+        $.ajax({
+            method: "GET",
+            url:"MenuItem/Details/"+id
+        }).done(function (response) {
+            //update qty if already exists
+            if (order.has($('#' + id)).length == 1) {
+                //current qty
+                var curr = parseInt($('#' + id + ' > .qty:first').text());
+                var inc = curr + 1;
+                //update qty
+                $('#' + id + ' >.qty:first').text(inc);
+            }
+            else {
+                //build the row in the order tab
+                //append item
+                order.append(buildRow(response));
+            }
+            //update totals
+            updateTotals(response.cost);
+        });
+    }
+
+    //build each row in the order tab
+    function buildRow(item) {
+        var qty     = "<td class=\"col-2 qty\">1</td>",
+            name    = "<td class=\"col-4\">" + item.name + "</td>",
+            cost    = "<td class=\"col-4\">" + item.cost + "</td>",
+            x = "<td class=\"removeItem col-2\"><button class=\"btn btn-danger\">X</button></td>",
+            openTags = "<tr class=\"row\" id=\"" + item.id + "\">",
+            closeTags = "</tr>",
+            row = openTags + qty + name + cost + x +closeTags;
+
+        return row;
+    }
+
+    //add or subtract item cost from totals (do all math here)
+    //should running total be pushed to DB and pulled for each new item? (otherwise client can change total to 0)
+    function updateTotals(price) {
+        //add to subtotal
+        var subtotal = parseFloat($('#subtotal:first').text()) + parseFloat(price);
+        $('#subtotal:first').text(subtotal.toFixed(2));
+
+        //the rest requires waiting on the promise of the discount response
+        getDiscount().done(function(disc){
+            var discount;
+            if(disc.type == 'Fixed')
+            {
+                discount = parseFloat(disc.amount);
+            }
+            else
+            {
+                discount = subtotal * (parseFloat(disc.amount/100));
+            }
+
+            $('#discount:first').text(discount.toFixed(2));
+
+            //pretax total = subtotal - discount
+            var pretax = subtotal < discount ? 0 : subtotal - discount;
+            $('#pretax:first').text(pretax.toFixed(2));
+
+            //tax = pretax * taxPerc
+            var taxPerc = @ViewBag.TotalTaxPerc;
+            var tax = pretax * (taxPerc/100).toFixed(2);
+            $('#tax:first').text(tax.toFixed(2));
+
+            //total = pretax + tax
+            var total = parseFloat(pretax) + parseFloat(tax);
+            $('#total:first').text(total.toFixed(2));
+        });
+    }
+
+    //functions for controlling submit button
+    function deactivateBtn(){
+        $('#submit').removeClass('btn-success').prop('disabled', true);
+    }
+    function activateBtn(){
+        $('#submit').addClass('btn-success').prop('disabled', false);
+    }
+
+    //disables all discount buttons except the one selected
+    function disableDiscounts(discountBtn){
+        $('.discount').each(function(){
+            if(discountBtn != $(this)[0])
+                $(this).prop('disabled', true);
+            else
+                $(this).removeClass('btn-info').addClass('btn-success selectedDiscount');
+        });
+    }
+
+    //reset all discount buttons back to enabled
+    function enableDiscounts(){
+        $('.discount').each(function(){
+            $(this).removeClass('btn-success selectedDiscount');
+            $(this).prop('disabled', false);
+            if(!$(this).hasClass('btn-info'))
+                $(this).addClass('btn-info')
+        });
+    }
+
+    //get the values for a discount from the DB
+    function getDiscount(){
+        var promise = new $.Deferred();
+        var id = $('.selectedDiscount').find('.discountId').text();
+        //get details from DB only if there was actually a discount selected
+        if(id != ""){
+            $.ajax({
+                method: "GET",
+                url: "Discount/Details/" + id
+            }).done(function (response) {
+                var disc = {};
+                disc.type = response.type;
+                if(response.type == 'Fixed')
+                    disc.amount = response.fixedAmount;
+                else
+                    disc.amount = response.percentAmount;
+                promise.resolve(disc);
+            })
+        }
+        else{
+            promise.resolve({type: "Fixed", amount: "0.00"});
+        }
+
+        return promise.promise();
+    }
+
+</script>
+
+<style type="text/css">
+    .selectionBoxes {
+        display: inline-block;
+        margin: 10px;
+    }
+</style>
