@@ -10,7 +10,7 @@ namespace PoS.Controllers
 {
     public class HomeController : Controller
     {
-        private UserContext db = new UserContext();
+        private PoSContext db = new PoSContext();
 
         //Login Page
         // GET: /Home/

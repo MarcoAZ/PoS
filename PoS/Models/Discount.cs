@@ -29,8 +29,4 @@ namespace PoS.Models
         public int ? PercentAmount { get; set; }
     }
 
-    public class DiscountContext : DbContext
-    {
-        public DbSet<Discount> Discounts { get; set; }
-    }
 }

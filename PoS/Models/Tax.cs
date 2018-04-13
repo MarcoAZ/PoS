@@ -24,8 +24,4 @@ namespace PoS.Models
         public decimal Rate { get; set; }
     }
 
-    public class TaxContext : DbContext
-    {
-        public DbSet<Tax> Taxes { get; set; }
-    }
 }

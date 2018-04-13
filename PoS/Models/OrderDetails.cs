@@ -28,8 +28,4 @@ namespace PoS.Models
 
     }
 
-    public class OrderDetailsContext : DbContext
-    {
-        public DbSet<OrderDetails> OrderDetails { get; set; }
-    }
 }

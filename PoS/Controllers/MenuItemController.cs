@@ -12,7 +12,7 @@ namespace PoS.Controllers
 { 
     public class MenuItemController : Controller
     {
-        private MenuContext db = new MenuContext();
+        private PoSContext db = new PoSContext();
 
         public List<MenuItem> GetItems() 
         {

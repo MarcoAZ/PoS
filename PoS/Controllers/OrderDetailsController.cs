@@ -9,7 +9,7 @@ namespace PoS.Controllers
 {
     public class OrderDetailsController : Controller
     {
-        private OrderDetailsContext db = new OrderDetailsContext();
+        private PoSContext db = new PoSContext();
 
         //
         // GET: /OrderDetails/

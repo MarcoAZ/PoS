@@ -24,8 +24,5 @@ namespace PoS.Models
         public decimal Cost {get;set;}
     }
 
-    public class MenuContext : DbContext
-    {
-        public DbSet<MenuItem> MenuItems { get; set; }
-    }
+
 }

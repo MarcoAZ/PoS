@@ -35,9 +35,4 @@ namespace PoS.Models
 
     }
 
-    public class UserContext : DbContext
-    {
-        public DbSet<User> Users { get; set; }
-    }
-
 }

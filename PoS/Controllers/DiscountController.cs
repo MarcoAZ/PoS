@@ -11,7 +11,7 @@ namespace PoS.Controllers
 { 
     public class DiscountController : Controller
     {
-        private DiscountContext db = new DiscountContext();
+        private PoSContext db = new PoSContext();
 
         //get list of all discounts
         public List<Discount> GetDiscounts()

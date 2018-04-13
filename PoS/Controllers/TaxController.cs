@@ -11,7 +11,7 @@ namespace PoS.Controllers
 { 
     public class TaxController : Controller
     {
-        private TaxContext db = new TaxContext();
+        private PoSContext db = new PoSContext();
 
         //get list of all taxes with names
         public List<Tax> GetTaxes()
